@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace表示命名空间 -->
+<mapper namespace="com.lywhxy.mapper.OrderMapper">
+    <!--嵌套查询 先查询出所有的订单信息，然后根据某个订单再去查询对应的用户信息。-->
+    <!--根据id查询用户信息-->
+    <select id="selectUserById" parameterType="Integer" resultType="User">
+        select * from user
+        where id = #{id}
+    </select>
+    <resultMap id="OrderMapper1" type="Order">
+<!--        <id property="id" column="id"/>-->
+<!--        <result property="money" column="money"/>-->
+        <!--查询结果映射到一个对象-->
+        <association property="user" column="user_id" javaType="User" select="selectUserById"/>
+    </resultMap>
+    <!--查询订单-->
+    <!--    List<Order> selectOrderList();-->
+    <select id="selectOrderList" resultMap="OrderMapper1">
+        select * from orders
+    </select>
+
+    <!--嵌套结果，一次查询把订单和对应的用户信息查询出来-->
+    <resultMap id="OrderMapper2" type="Order">
+        <id property="id" column="id"/>
+        <result property="money" column="money"/>
+        <result property="receiverAddress" column="receiverAddress"/>
+        <result property="receiverName" column="receiverName"/>
+        <result property="receiverPhone" column="receiverPhone"/>
+        <result property="ordertime" column="ordertime"/>
+        <!--把查询出来的User信息映射一个User对象-->
+        <association property="user" javaType="User">
+        <id property="id" column="user_id"/>
+        <result property="username" column="username"/>
+        <result property="gender" column="gender"/>
+        <result property="email" column="email"/>
+        </association>
+    </resultMap>
+    <select id="selectOrderList2" resultMap="OrderMapper2">
+        select * from orders
+        left join user u on u.id = orders.user_id
+    </select>
+
+</mapper>
